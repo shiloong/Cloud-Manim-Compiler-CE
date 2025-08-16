@@ -6,6 +6,6 @@
 
 点击下方按钮在 Binder 中启动 JupyterLab 环境：
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/你的用户名/你的仓库名/HEAD)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/shiloong/Cloud-Manim-Compiler/HEAD?urlpath=/doc/tree/Cloud-Manim-Compiler-JupyterLab.ipynb)
 
 

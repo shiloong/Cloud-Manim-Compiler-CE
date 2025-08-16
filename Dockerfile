@@ -2,35 +2,34 @@ FROM manimcommunity/manim:v0.19.0
 
 USER root
 
-# 安装基础依赖（code-server 运行所需）
-RUN apt-get update && apt-get install -y \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# 仅安装必要依赖：curl（用于安装 code-server）和基础工具
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-# 安装 code-server（VSCode 服务器版）
+# 安装指定版本的 code-server（轻量安装）
 RUN curl -fsSL https://code-server.dev/install.sh | sh -s -- --version 4.16.1
 
-# 安装 Jupyter 和必要的 Python 依赖
-RUN pip install notebook ipykernel
+# 安装 Jupyter 核心组件（仅保留必要部分）
+RUN pip install notebook ipykernel --no-cache-dir
 
-# 配置 code-server（允许匿名访问，绑定 Binder 端口）
-RUN mkdir -p /home/manimuser/.config/code-server \
-    && echo "bind-addr: 0.0.0.0:8888" > /home/manimuser/.config/code-server/config.yaml \
-    && echo "auth: none" >> /home/manimuser/.config/code-server/config.yaml \
-    && echo "cert: false" >> /home/manimuser/.config/code-server/config.yaml \
-    && chown -R manimuser:manimuser /home/manimuser/.config
+# 配置 code-server 基础设置（仅保留关键配置）
+RUN mkdir -p /home/manimuser/.config/code-server && \
+    echo "bind-addr: 0.0.0.0:8888" > /home/manimuser/.config/code-server/config.yaml && \
+    echo "auth: none" >> /home/manimuser/.config/code-server/config.yaml && \
+    echo "cert: false" >> /home/manimuser/.config/code-server/config.yaml && \
+    chown -R manimuser:manimuser /home/manimuser/.config
 
-# 安装 VSCode 扩展（可选，提升体验）
-RUN code-server --install-extension ms-python.python \
-    && code-server --install-extension ms-python.pylance \
-    && code-server --install-extension jithurjacob.nbpreviewer  # Jupyter 笔记本预览支持
+# 仅安装最必要的 VSCode 扩展（Python 支持）
+RUN code-server --install-extension ms-python.python
 
+# 切换回普通用户
 ARG NB_USER=manimuser
 USER ${NB_USER}
 
-# 复制项目文件到容器（保持原权限）
+# 复制项目文件并设置工作目录
 COPY --chown=manimuser:manimuser . /manim
 WORKDIR /manim
 
-# 启动命令：用 code-server 替代默认 Jupyter
+# 暴露端口并设置启动命令
+EXPOSE 8888
 CMD ["code-server", "--config", "/home/manimuser/.config/code-server/config.yaml", "/manim"]
+    
